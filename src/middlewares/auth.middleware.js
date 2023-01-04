@@ -14,8 +14,7 @@ export async function signUpAuthMiddleware(req, res, next) {
 }
 
 export async function signInAuthMiddleware(req, res, next) {
-  const auth = req.body
-
+  const auth = req.body;
   const validation = authSignInSchema.validate(auth, { abortEarly: false })
   if (validation.error) {
     const error = validation.error.details.map((detail) => detail.message)

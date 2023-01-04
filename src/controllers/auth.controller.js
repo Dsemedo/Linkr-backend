@@ -2,7 +2,21 @@ import bcrypt from "bcrypt"
 import { connectionDb } from "../database/database.js"
 import jwt from "jsonwebtoken"
 
-export async function signUpAuthController(req, res) {}
+export async function signUpAuthController(req, res) {
+  const {email, password, username, picture} = req.body;
+  const passwordHash = bcrypt.hashSync(password, 7);
+  try{
+    await connectionDb.query(`
+    INSERT INTO users
+    (email, password, username, picture)
+    VALUES ($1,$2,$3,$4)
+    `, [email, passwordHash, username, picture]);
+   return res.sendStatus(200)
+  } catch(err){
+    console.log(err)
+    return res.status(404).send(err.detail)
+  }
+}
 
 export async function signInAuthController(req, res) {
   const { email, password } = req.body
