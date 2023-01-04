@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt"
-import { connectionDb } from "../datadase/datadase.js"
+import { connectionDb } from "../database/database.js"
 import jwt from "jsonwebtoken"
 
 export async function signUpAuthController(req, res) {}
