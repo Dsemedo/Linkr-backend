@@ -7,5 +7,5 @@ export const linkrSchema = Joi.object({
       /^(http(s):\/\/.)[-a-zA-Z0-9@:%.~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%.~#?&//=]*)$/
     )
     .required(),
-  description: Joi.string(),
+  description: Joi.required().allow(""),
 });
