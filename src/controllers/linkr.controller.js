@@ -6,9 +6,22 @@ export async function linkrController(req, res) {
 
   try {
     const { rows } = await connectionDb.query(
-      `INSERT INTO posts (description, link, "userId") VALUES ($1,$2, $3) RETURNING *;`,
+      `INSERT INTO posts (description, link, "userId") VALUES ($1,$2, $3) RETURNING *`,
       [description, link, userId]
     );
+
+    if(description){
+      const descriptionPost = rows[0].description
+
+      const descriptionSplit = descriptionPost.split(" ")
+  
+      const hashtagsFilter = descriptionSplit.filter((e) => e[0] === "#")
+
+      hashtagsFilter.forEach( async (hash) => await connectionDb.query(
+        `INSERT INTO hashtags (hashtag, "idPost") VALUES ($1,$2)`,
+        [hash, rows[0].id]
+      ))
+    }
     return res.status(201).send(rows);
   } catch (err) {
     console.log(err);
