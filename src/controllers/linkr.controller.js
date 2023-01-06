@@ -9,7 +9,7 @@ export async function linkrController(req, res) {
       `INSERT INTO posts (description, link, "userId") VALUES ($1,$2, $3) RETURNING *;`,
       [description, link, userId]
     );
-    return res.status(200).send(rows);
+    return res.status(201).send(rows);
   } catch (err) {
     console.log(err);
     return res.status(404).send(err.details);
@@ -18,7 +18,7 @@ export async function linkrController(req, res) {
 
 export async function getPosts(req, res) {
   try {
-    const posts = await connectionDb.query("SELECT * FROM posts;");
+    const posts = await connectionDb.query("SELECT * FROM posts ORDER BY id DESC LIMIT 20;");
     res.send(posts.rows);
   } catch (err) {
     res.status(500).send(err.message);
