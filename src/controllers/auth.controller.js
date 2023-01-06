@@ -48,9 +48,11 @@ export async function signInAuthController(req, res) {
     const generateToken = (id) =>
       jwt.sign({ id: id }, process.env.SECRET_JWT, { expiresIn: 86400 });
 
+    const dataUser = userFounded.rows[0];
+    delete dataUser.password;
     const token = generateToken(userFounded.rows[0].id);
 
-    res.send(token);
+    res.send({ token, dataUser });
   } catch (err) {
     res.send(err).status(400);
   }
