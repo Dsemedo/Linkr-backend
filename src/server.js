@@ -4,6 +4,7 @@ import cors from "cors";
 import { authRoute } from "./routes/auth.routes.js";
 import { linkrRoute } from "./routes/linkr.routes.js";
 import { hashtagRoute } from "./routes/hashtag.routes.js";
+import { likeRouter } from "./routes/likes.routes.js";
 dotenv.config();
 
 const app = express();
@@ -11,7 +12,8 @@ app.use(cors());
 app.use(express.json());
 app.use(authRoute);
 app.use(linkrRoute);
-app.use(hashtagRoute)
+app.use(hashtagRoute);
+app.use(likeRouter);
 
 
 const port = process.env.PORT;
