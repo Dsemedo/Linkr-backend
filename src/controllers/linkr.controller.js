@@ -31,7 +31,16 @@ export async function linkrController(req, res) {
 
 export async function getPosts(req, res) {
   try {
-    const posts = await connectionDb.query("SELECT * FROM posts ORDER BY id DESC LIMIT 20;");
+    const posts = await connectionDb.query(
+      `SELECT p.id, p.description, p.link, u.username, u.picture, COUNT(l."idPost") as likes 
+      FROM posts p
+      JOIN users u
+      ON p."userId" = u.id
+      LEFT JOIN likes l
+      ON l."idPost" = p.id
+      GROUP BY p.id, u.id
+      ORDER BY id DESC LIMIT 20
+      `);
     res.send(posts.rows);
   } catch (err) {
     res.status(500).send(err.message);

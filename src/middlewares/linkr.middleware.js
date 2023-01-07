@@ -23,7 +23,7 @@ export async function linkrMiddleware(req, res, next) {
     const [schema, token] = parts;
 
     if (schema !== "Bearer") {
-      return res.send(401);
+      return res.sendStatus(401);
     }
 
     jwt.verify(token, process.env.SECRET_JWT, async (error, decoded) => {
