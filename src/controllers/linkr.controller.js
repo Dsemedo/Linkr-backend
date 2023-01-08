@@ -1,4 +1,5 @@
 import { connectionDb } from "../database/database.js";
+import urlMetadata from "url-metadata";
 
 export async function linkrController(req, res) {
   const { description, link } = req.body;
@@ -10,17 +11,20 @@ export async function linkrController(req, res) {
       [description, link, userId]
     );
 
-    if(description){
-      const descriptionPost = rows[0].description
+    if (description) {
+      const descriptionPost = rows[0].description;
 
-      const descriptionSplit = descriptionPost.split(" ")
-  
-      const hashtagsFilter = descriptionSplit.filter((e) => e[0] === "#")
+      const descriptionSplit = descriptionPost.split(" ");
 
-      hashtagsFilter.forEach( async (hash) => await connectionDb.query(
-        `INSERT INTO hashtags (hashtag, "idPost") VALUES ($1,$2)`,
-        [hash, rows[0].id]
-      ))
+      const hashtagsFilter = descriptionSplit.filter((e) => e[0] === "#");
+
+      hashtagsFilter.forEach(
+        async (hash) =>
+          await connectionDb.query(
+            `INSERT INTO hashtags (hashtag, "idPost") VALUES ($1,$2)`,
+            [hash, rows[0].id]
+          )
+      );
     }
     return res.status(201).send(rows);
   } catch (err) {
@@ -40,8 +44,31 @@ export async function getPosts(req, res) {
       ON l."idPost" = p.id
       GROUP BY p.id, u.id
       ORDER BY id DESC LIMIT 20
-      `);
-    res.send(posts.rows);
+      `
+    );
+
+    const newArray = await Promise.all(
+      posts.rows.map(async (e) => {
+        let newPosts = { ...e };
+
+        const metadataLink = await urlMetadata(e.link).then(
+          function (metadata) {
+            // success handler
+
+            newPosts.urlTitle = metadata.title;
+            newPosts.urlImage = metadata.image;
+            newPosts.urlDescription = metadata.description;
+          },
+          function (error) {
+            // failure handler
+            console.log(error);
+          }
+        );
+        return newPosts;
+      })
+    );
+
+    res.send(newArray);
   } catch (err) {
     res.status(500).send(err.message);
   }
