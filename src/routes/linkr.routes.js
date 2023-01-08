@@ -8,3 +8,5 @@ linkrRoute.post("/timeline", linkrMiddleware, linkrController);
 linkrRoute.get("/timeline", getPosts);
 
 linkrRoute.delete("/timeline/:id", deleteMiddleware , linkrDeleteController);
+
+linkrRoute.patch("/timeline/:id", deleteMiddleware , linkrDeleteController);
