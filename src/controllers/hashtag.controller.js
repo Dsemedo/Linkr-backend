@@ -16,18 +16,30 @@ export async function hashtagController(req, res) {
 }
 
 export async function hashtagTimeline (req, res){
-  const {hashtag} = req.params;
+  const hashtag = `#${req.params.hashtag}`
+
   try {
     const posts = await connectionDb.query(
-      `SELECT p.id, p.description, p.link, u.username, u.picture, COUNT(l."idPost") as likes 
-      FROM posts p
-      JOIN users u
-      ON p."userId" = u.id
-      LEFT JOIN likes l
-      ON l."idPost" = p.id
-      WHERE p.description LIKE '%' || $1 || '%'
-      GROUP BY p.id, u.id 
-      ORDER BY id DESC LIMIT 20
+      `
+      SELECT
+        posts.id,
+        posts.description,
+        posts.link,
+        users.username,
+        users.picture,
+        COUNT(likes."idPost") as likes
+      FROM
+          hashtags
+      INNER JOIN
+          posts ON posts.id = hashtags."idPost"
+      INNER JOIN
+          users ON users.id = posts."userId"
+      LEFT JOIN
+          likes ON likes."idPost" = posts.id
+      WHERE
+          hashtag = $1
+      GROUP BY
+          posts.id, users.id
       `, [hashtag]);
     return res.send(posts.rows);
   } catch (err) {
