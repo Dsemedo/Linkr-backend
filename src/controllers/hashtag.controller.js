@@ -14,3 +14,35 @@ export async function hashtagController(req, res) {
     res.status(500).send(err.message)
   }
 }
+
+export async function hashtagTimeline (req, res){
+  const hashtag = `#${req.params.hashtag}`
+
+  try {
+    const posts = await connectionDb.query(
+      `
+      SELECT
+        posts.id,
+        posts.description,
+        posts.link,
+        users.username,
+        users.picture,
+        COUNT(likes."idPost") as likes
+      FROM
+          hashtags
+      INNER JOIN
+          posts ON posts.id = hashtags."idPost"
+      INNER JOIN
+          users ON users.id = posts."userId"
+      LEFT JOIN
+          likes ON likes."idPost" = posts.id
+      WHERE
+          hashtag = $1
+      GROUP BY
+          posts.id, users.id
+      `, [hashtag]);
+    return res.send(posts.rows);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+}

@@ -1,7 +1,6 @@
 import { Router } from "express";
-import { hashtagController } from "../controllers/hashtag.controller.js";
+import { hashtagController, hashtagTimeline } from "../controllers/hashtag.controller.js";
 export const hashtagRoute = Router();
 
-hashtagRoute.get("/hashtag", hashtagController);
-
-
+hashtagRoute.get("/hashtags", hashtagController);
+hashtagRoute.get("/hashtags/:hashtag", hashtagTimeline)

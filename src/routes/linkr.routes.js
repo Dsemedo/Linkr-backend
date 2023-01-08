@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { linkrController, getPosts, linkrDeleteController } from "../controllers/linkr.controller.js";
+import { linkrController, getPosts, linkrDeleteController, linkrPatchController } from "../controllers/linkr.controller.js";
 import { linkrMiddleware, deleteMiddleware } from "../middlewares/linkr.middleware.js";
 export const linkrRoute = Router();
 
@@ -9,4 +9,4 @@ linkrRoute.get("/timeline", getPosts);
 
 linkrRoute.delete("/timeline/:id", deleteMiddleware , linkrDeleteController);
 
-linkrRoute.patch("/timeline/:id", deleteMiddleware , linkrDeleteController);
+linkrRoute.patch("/timeline/:id", linkrMiddleware , linkrPatchController);
