@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { userController } from "../controllers/user.controller.js";
+import { userController, searchUserController } from "../controllers/user.controller.js";
+import { searchUserMiddleware } from "../middlewares/users.middlewares.js";
+
 export const userRoute = Router();
 
 userRoute.get("/user/:id", userController);
+
+userRoute.get("/users", searchUserMiddleware, searchUserController);
