@@ -1,4 +1,5 @@
 import { connectionDb } from "../database/database.js"
+import urlMetadata from "url-metadata"
 
 export async function hashtagController(req, res) {
   try {
@@ -22,6 +23,7 @@ export async function hashtagTimeline (req, res){
     const posts = await connectionDb.query(
       `
       SELECT
+      posts."userId",
         posts.id,
         posts.description,
         posts.link,
@@ -41,7 +43,28 @@ export async function hashtagTimeline (req, res){
       GROUP BY
           posts.id, users.id
       `, [hashtag]);
-    return res.send(posts.rows);
+      const newArray = await Promise.all(
+        posts.rows.map(async (e) => {
+          let newPosts = { ...e }
+  
+          const metadataLink = await urlMetadata(e.link).then(
+            function (metadata) {
+              // success handler
+  
+              newPosts.urlTitle = metadata.title
+              newPosts.urlImage = metadata.image
+              newPosts.urlDescription = metadata.description
+            },
+            function (error) {
+              // failure handler
+              console.log(error)
+            }
+          )
+          return newPosts
+        })
+      )
+  
+    return res.send(newArray);
   } catch (err) {
     res.status(500).send(err.message);
   }
