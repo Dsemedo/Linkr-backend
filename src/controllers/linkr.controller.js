@@ -36,7 +36,7 @@ export async function linkrController(req, res) {
 export async function getPosts(req, res) {
   try {
     const posts = await connectionDb.query(
-      `SELECT p.id, p.description, p.link, p."userId", u.username, u.picture, COUNT(l."idPost") as likes 
+      `SELECT p.id, p.description, p.link, p."userId", u.username, u.picture, COUNT(l."idPost") as likes, json_agg(l.username) as "usersWhoLiked"
       FROM posts p
       JOIN users u
       ON p."userId" = u.id
@@ -51,7 +51,7 @@ export async function getPosts(req, res) {
       posts.rows.map(async (e) => {
         let newPosts = { ...e }
 
-        const metadataLink = await urlMetadata(e.link).then(
+        await urlMetadata(e.link).then(
           function (metadata) {
             // success handler
 
