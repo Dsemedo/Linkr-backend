@@ -16,7 +16,7 @@ export async function userController(req, res) {
       [id]
     )
     if(posts.rows.length === 0){
-      console.log("OOOOOI")
+
       const dados = await connectionDb.query(`
       SELECT u.picture, u.username FROM users u WHERE id = $1
       `,[id])
@@ -29,21 +29,19 @@ export async function userController(req, res) {
 
         const metadataLink = await urlMetadata(e.link).then(
           function (metadata) {
-            // success handler
 
             newPosts.urlTitle = metadata.title
             newPosts.urlImage = metadata.image
             newPosts.urlDescription = metadata.description
           },
           function (error) {
-            // failure handler
             console.log(error)
           }
         )
         return newPosts
       })
     )
-      console.log(newArray)
+
     return res.send(newArray)
   } catch (err) {
     console.log(err)
@@ -70,7 +68,6 @@ export async function searchUserController(req, res) {
 
 export async function searchUserForName (req, res){
   const nome = req.params.name;
-  console.log(nome)
 
   try {
     const { rows } = await connectionDb.query(`
