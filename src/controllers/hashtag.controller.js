@@ -16,56 +16,46 @@ export async function hashtagController(req, res) {
   }
 }
 
-export async function hashtagTimeline (req, res){
+export async function hashtagTimeline(req, res) {
   const hashtag = `#${req.params.hashtag}`
 
   try {
     const posts = await connectionDb.query(
-      `
-      SELECT
-      posts."userId",
-        posts.id,
-        posts.description,
-        posts.link,
-        users.username,
-        users.picture,
-        COUNT(likes."idPost") as likes
-      FROM
-          hashtags
-      INNER JOIN
-          posts ON posts.id = hashtags."idPost"
-      INNER JOIN
-          users ON users.id = posts."userId"
-      LEFT JOIN
-          likes ON likes."idPost" = posts.id
-      WHERE
-          hashtag = $1
-      GROUP BY
-          posts.id, users.id
-      `, [hashtag]);
-      const newArray = await Promise.all(
-        posts.rows.map(async (e) => {
-          let newPosts = { ...e }
-  
-          const metadataLink = await urlMetadata(e.link).then(
-            function (metadata) {
-              // success handler
-  
-              newPosts.urlTitle = metadata.title
-              newPosts.urlImage = metadata.image
-              newPosts.urlDescription = metadata.description
-            },
-            function (error) {
-              // failure handler
-              console.log(error)
-            }
-          )
-          return newPosts
-        })
-      )
-  
-    return res.send(newArray);
+      `SELECT posts."userId", posts.id, posts.description, posts.link, users.username, users.picture, 
+      COUNT(likes."idPost") as likes, 
+      json_agg(likes.username) as "usersWhoLiked" 
+      FROM hashtags
+      INNER JOIN posts ON posts.id = hashtags."idPost"
+      INNER JOIN users ON users.id = posts."userId"
+      LEFT JOIN likes ON likes."idPost" = posts.id
+      WHERE hashtag = $1
+      GROUP BY posts.id, users.id
+      `,
+      [hashtag]
+    )
+    const newArray = await Promise.all(
+      posts.rows.map(async (e) => {
+        let newPosts = { ...e }
+
+        const metadataLink = await urlMetadata(e.link).then(
+          function (metadata) {
+            // success handler
+
+            newPosts.urlTitle = metadata.title
+            newPosts.urlImage = metadata.image
+            newPosts.urlDescription = metadata.description
+          },
+          function (error) {
+            // failure handler
+            console.log(error)
+          }
+        )
+        return newPosts
+      })
+    )
+
+    return res.send(newArray)
   } catch (err) {
-    res.status(500).send(err.message);
+    res.status(500).send(err.message)
   }
 }

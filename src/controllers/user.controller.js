@@ -4,8 +4,7 @@ export async function userController(req, res) {
   const { id } = req.params
   try {
     const posts = await connectionDb.query(
-      `
-      SELECT p.id, p.description, p.link, p."userId", u.username, u.picture, COUNT(l."idPost") as likes, json_agg(l.username) as "usersWhoLiked"
+     `SELECT p.id, p.description, p.link, p."userId", u.username, u.picture, COUNT(l."idPost") as likes, json_agg(l.username) as "usersWhoLiked"
       FROM posts p
       JOIN users u
       ON p."userId" = u.id
