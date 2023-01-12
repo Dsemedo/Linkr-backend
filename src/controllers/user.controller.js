@@ -13,10 +13,17 @@ export async function userController(req, res) {
       ON l."idPost" = p.id
       WHERE "userId" = $1
       GROUP BY p.id, u.id
-      ORDER BY id DESC LIMIT 20
-        `,
+      ORDER BY id DESC LIMIT 20`,
       [id]
     )
+    if(posts.rows.length === 0){
+      console.log("OOOOOI")
+      const dados = await connectionDb.query(`
+      SELECT u.picture, u.username FROM users u WHERE id = $1
+      `,[id])
+
+      return res.send(dados.rows)
+    }
     const newArray = await Promise.all(
       posts.rows.map(async (e) => {
         let newPosts = { ...e }
@@ -37,8 +44,8 @@ export async function userController(req, res) {
         return newPosts
       })
     )
-
-    res.send(newArray)
+      console.log(newArray)
+    return res.send(newArray)
   } catch (err) {
     console.log(err)
     return res.status(500).send(err)
@@ -50,11 +57,27 @@ export async function searchUserController(req, res) {
 
   try {
     const { rows } = await connectionDb.query(
-      `SELECT * FROM users WHERE username LIKE $1`,
+      `SELECT * FROM users WHERE username ILIKE $1`,
       [`${search}%`]
     )
 
     res.send(rows)
+
+  } catch (err) {
+    console.log(err)
+    return res.status(500).send(err)
+  }
+}
+
+export async function searchUserForName (req, res){
+  const nome = req.params.name;
+  console.log(nome)
+
+  try {
+    const { rows } = await connectionDb.query(`
+    SELECT u.username, u.id, u.picture FROM users u WHERE username ILIKE $1`,[`${nome}%`])
+
+    return res.status(200).send(rows)
 
   } catch (err) {
     console.log(err)
