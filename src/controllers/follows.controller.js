@@ -79,3 +79,23 @@ export async function deleteFollowController(req, res) {
     return res.status(404).send(err.details)
   }
 }
+
+export async function checkFollowController(req, res) {
+  const userId = res.locals.userId
+  const idUserFollowed = req.params.id
+
+  try {
+    const checkFollow = await connectionDb.query(`
+    SELECT FROM follows WHERE "usernameId" = $1 AND "followedUserId" = $2`,
+      [userId, idUserFollowed]
+    )
+    if(!checkFollow.rows[0]){
+      return res.status(200).send({followThisUser: false})
+    }
+
+    return res.status(200).send({followThisUser: true})
+  } catch (err) {
+    console.log(err)
+    return res.status(500).send(err)
+  }
+}

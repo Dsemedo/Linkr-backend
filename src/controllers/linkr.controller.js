@@ -34,41 +34,57 @@ export async function linkrController(req, res) {
 }
 
 export async function getPosts(req, res) {
+  const userId = res.locals.userId
+
   try {
-    const posts = await connectionDb.query(
-      `SELECT p.id, p.description, p.link, p."userId", u.username, u.picture, COUNT(l."idPost") as likes, json_agg(l.username) as "usersWhoLiked"
-      FROM posts p
-      JOIN users u
-      ON p."userId" = u.id
-      LEFT JOIN likes l
-      ON l."idPost" = p.id
-      GROUP BY p.id, u.id
-      ORDER BY id DESC LIMIT 20
-      `
+    const checkIfExist = await connectionDb.query(
+      `SELECT * FROM follows WHERE "usernameId"=$1`,
+      [userId]
     )
+    if (!checkIfExist.rows[0]) {
+      res
+        .status(404)
+        .send("You don't follow anyone yet. Search for new friends!")
+      return
+    }
 
-    const newArray = await Promise.all(
-      posts.rows.map(async (e) => {
+    const postsFollowed = await connectionDb.query(
+      `SELECT p.id, p.description, p.link, p."userId", u.username, u.picture, COUNT(l."idPost") as likes, json_agg(l.username) as "usersWhoLiked"
+    FROM follows f
+    JOIN posts p
+    ON p."userId" = f."followedUserId" 
+    JOIN users u
+    ON u.id = p."userId"
+    LEFT JOIN likes l
+    ON l."idPost" = p.id
+    WHERE f."usernameId" = $1
+    GROUP BY p.id, u.id
+    ORDER BY id DESC
+    `,
+      [userId]
+    )
+    const newArrayFollowed = await Promise.all(
+      postsFollowed.rows.map(async (e) => {
         let newPosts = { ...e }
-
         await urlMetadata(e.link).then(
           function (metadata) {
-            // success handler
-
             newPosts.urlTitle = metadata.title
             newPosts.urlImage = metadata.image
             newPosts.urlDescription = metadata.description
           },
           function (error) {
-            // failure handler
             console.log(error)
           }
         )
         return newPosts
       })
     )
+    if (!postsFollowed.rows[0]) {
+      res.status(200).send("No posts found from your friends")
+      return
+    }
 
-    res.send(newArray)
+    res.status(200).send(newArrayFollowed)
   } catch (err) {
     res.status(500).send(err.message)
   }
