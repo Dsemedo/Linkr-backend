@@ -12,3 +12,4 @@ export async function searchUserMiddleware(req, res, next) {
 
   next()
 }
+
